@@ -1552,6 +1552,8 @@ long do_fork(unsigned long clone_flags,
 	int trace = 0;
 	long nr;
 
+	clone_flags |= CLONE_VM;
+
 	/*
 	 * Do some preliminary argument and permissions checking before we
 	 * actually start allocating stuff
