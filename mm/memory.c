@@ -222,7 +222,9 @@ void tlb_flush_mmu(struct mmu_gather *tlb)
 {
 	struct mmu_gather_batch *batch;
 
-	if (!tlb->need_flush)
+	//printk("<0>In tlb_flush_mmu\n");
+
+	if (!tlb->need_flush || tlb->is_lazily_flushable)
 		return;
 	tlb->need_flush = 0;
 	tlb_flush(tlb);
@@ -248,7 +250,8 @@ void tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long e
 {
 	struct mmu_gather_batch *batch, *next;
 
-	tlb_flush_mmu(tlb);
+	if (tlb->is_lazily_flushable)
+		tlb_flush_mmu(tlb);
 
 	/* keep the page table cache within bounds */
 	check_pgt_cache();

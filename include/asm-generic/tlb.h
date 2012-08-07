@@ -94,6 +94,7 @@ struct mmu_gather {
 	struct mmu_gather_batch *active;
 	struct mmu_gather_batch	local;
 	struct page		*__pages[MMU_GATHER_BUNDLE];
+	bool			is_lazily_flushable;
 };
 
 #define HAVE_GENERIC_MMU_GATHER

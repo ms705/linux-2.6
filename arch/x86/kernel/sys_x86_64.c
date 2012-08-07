@@ -18,6 +18,7 @@
 
 #include <asm/ia32.h>
 #include <asm/syscalls.h>
+#include <asm/tlbflush.h>
 
 /*
  * Align a virtual address to avoid aliasing in the I$ on AMD F15h.
@@ -208,6 +209,12 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 	if (!test_thread_flag(TIF_ADDR32) && (flags & MAP_32BIT))
 		goto bottomup;
 
+	/* LIBLINUX:
+	 * Instead of searching for a hole here, we allocate memory from a
+	 * global "allocate here" pointer. Once we wrap around the address
+	 * space, we perform a TLB flush and start over.
+	 */
+
 	/* requesting a specific address */
 	if (addr) {
 		addr = PAGE_ALIGN(addr);
@@ -257,6 +264,14 @@ fail:
 	 * if hint left us with no space for the requested
 	 * mapping then try again:
 	 */
+	/* LIBLINUX:
+	 * We do not have sufficient space below addr to fit in the requested 
+	 * allocation, so we need to perform a TLB flush and retry from the 
+	 * beginning.
+	 */
+	printk("<0> failed to allocate %lx at addr %lx, wrapping around?", len, addr);
+	flush_tlb_all();
+	printk("<0>FLUSHED TLB!\n");
 	if (start_addr != mm->mmap_base) {
 		mm->free_area_cache = mm->mmap_base;
 		mm->cached_hole_size = 0;

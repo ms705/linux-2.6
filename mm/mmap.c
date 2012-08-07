@@ -1571,8 +1571,10 @@ void arch_unmap_area_topdown(struct mm_struct *mm, unsigned long addr)
 	/*
 	 * Is this a new hole at the highest possible address?
 	 */
-	if (addr > mm->free_area_cache)
-		mm->free_area_cache = addr;
+	/* LIBLINUX: Do not reset the allocation pointer here. 
+	 */
+	/*if (addr > mm->free_area_cache)
+		mm->free_area_cache = addr;*/
 
 	/* dont allow allocations above current base */
 	if (mm->free_area_cache > mm->mmap_base)
@@ -1914,6 +1916,7 @@ static void unmap_region(struct mm_struct *mm,
 	struct mmu_gather tlb;
 	unsigned long nr_accounted = 0;
 
+	tlb.is_lazily_flushable = 1;
 	lru_add_drain();
 	tlb_gather_mmu(&tlb, mm, 0);
 	update_hiwater_rss(mm);
