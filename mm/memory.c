@@ -250,7 +250,10 @@ void tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long e
 {
 	struct mmu_gather_batch *batch, *next;
 
-	if (tlb->is_lazily_flushable)
+	/* LIBLINUX: We only flush the TLB if we must do so eagerly; munmap will
+	 * set the is_lazily_flushable flag and thus can avoid the flush here.
+	 */
+	if (!tlb->is_lazily_flushable)
 		tlb_flush_mmu(tlb);
 
 	/* keep the page table cache within bounds */
